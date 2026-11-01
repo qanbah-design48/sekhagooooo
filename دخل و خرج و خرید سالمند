@@ -1,0 +1,447 @@
+{
+  "name": "حسابداری شخصی سالمندان",
+  "short_name": "حسابداری من",
+  "description": "دفتر حسابداری فارسی با یادداشت روزانه، یادآور و ضبط صوت",
+  "lang": "fa-IR",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f7fc",
+  "theme_color": "#07599b",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
+
+نسخه آماده PWA — حسابداری شخصی سالمندان
+
+این بسته برای میزبانی HTTPS آماده شده و پس از اولین بارگذاری، پوسته برنامه را برای استفاده آفلاین ذخیره می‌کند. باز کردن مستقیم index.html با دوبار کلیک، قابلیت نصب PWA و Service Worker را فعال نمی‌کند.
+
+مهم: این نسخه هنوز سرور حساب کاربری یا همگام‌سازی بین دستگاه‌ها ندارد. اطلاعات مالی در حافظه محلی همان مرورگر می‌ماند. قابلیت تبدیل گفتار به متن ممکن است به اینترنت و پشتیبانی مرورگر وابسته باشد. ضبط‌های صوتی در پایگاه داده محلی مرورگر نگهداری می‌شوند و در فایل پشتیبان JSON نیستند؛ برای انتقالشان هر فایل صوتی را جداگانه دانلود کنید.
+
+برای استفاده: میزبان HTTPS لازم است (برای مثال GitHub Pages). سپس نشانی سایت را با Chrome/Edge باز کنید و گزینه نصب برنامه را انتخاب کنید. پس از اولین بازدید موفق، برنامه پوسته اصلی را برای اجرای آفلاین نگه می‌دارد.
+
+قابلیت جدید: تنظیمات > بازیابی نسخه پشتیبان؛ فایل backup-hesabdari.json را انتخاب کنید. بازیابی اطلاعات فعلی را جایگزین می‌کند، پس قبل از آن خروجی پشتیبان بگیرید.
+
+const CACHE_NAME = 'hesabdari-seniors-v1';
+const APP_SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
+self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())); });
+self.addEventListener('activate', event => { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim())); });
+self.addEventListener('fetch', event => { if (event.request.method !== 'GET') return; event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => { if (response && response.ok && new URL(event.request.url).origin === self.location.origin) { const copy = response.clone(); caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)); } return response; }).catch(() => caches.match('./index.html')))); });
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="100" fill="#07599b"/><rect x="100" y="65" width="312" height="382" rx="24" fill="#fffdf4"/><path d="M145 150h220M145 220h220M145 290h145M145 360h180" stroke="#8bb8df" stroke-width="18" stroke-linecap="round"/><path d="M345 285l28 28 55-70" fill="none" stroke="#16a66a" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07599b">
+<meta name="description" content="دفتر حسابداری شخصی فارسی با یادداشت روزانه، یادآور و ضبط صوت؛ قابل استفاده با اینترنت و بدون اینترنت">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>حسابداری شخصی برای سالمندان</title>
+<style>
+:root{--blue:#0864bd;--navy:#06467c;--green:#16a66a;--orange:#ff9d16;--purple:#7750d8;--bg:#f2f7fc;--ink:#102d5c;--paper:#fffdf4}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#e4f2ff,#f8fbff);font-family:Tahoma,"Segoe UI",sans-serif;color:var(--ink);font-size:16px}button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}.app{max-width:560px;margin:auto;min-height:100vh;background:#fff;box-shadow:0 0 28px #12345a18;position:relative;padding-bottom:100px}header{background:linear-gradient(120deg,#064575,#0877bf);color:white;padding:17px 18px;border-radius:0 0 23px 23px;box-shadow:0 5px 14px #034b8833}.brand{display:flex;align-items:center;gap:12px}.logo{font-size:34px;background:#ffffff20;border:1px solid #ffffff70;border-radius:14px;padding:6px}.brand h1{font-size:21px;line-height:1.5;margin:0}.brand p{margin:3px 0 0;color:#e1f4ff;font-size:13px}main{padding:14px}.page{display:none}.page.active{display:block}.date{text-align:center;font-size:14px;color:#32547f;margin:0 0 13px}.balance{background:linear-gradient(125deg,#0b58ae,#1688dc);border-radius:16px;color:white;padding:17px;margin-bottom:14px;box-shadow:0 5px 12px #0c66b526}.balance .label{font-size:15px}.amount{font-size:29px;font-weight:bold;margin:10px 0}.currency{font-size:15px}.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tile{min-height:88px;border-radius:13px;color:#fff;padding:13px 9px;text-align:center;font-weight:bold;font-size:15px;box-shadow:0 3px 8px #00000012}.tile span{display:block;font-size:27px;margin-bottom:6px}.green{background:linear-gradient(135deg,#10a66b,#27bd7e)}.blue{background:linear-gradient(135deg,#0783d9,#1761c6)}.orange{background:linear-gradient(135deg,#ffac14,#f78308)}.purple{background:linear-gradient(135deg,#8056e5,#6138c4)}.card{background:#fff;border:1px solid #dce8f7;border-radius:15px;padding:15px;margin:12px 0;box-shadow:0 3px 12px #183c6810}.card h2{font-size:18px;margin:0 0 13px;color:#074c8b}.field{margin:11px 0}.field label{display:block;font-weight:bold;font-size:14px;margin-bottom:7px}.field input,.field select,.field textarea{width:100%;padding:12px;border:1px solid #c7d8ec;border-radius:10px;background:#fbfdff;color:#153660;outline-color:#2788dc}.field textarea{min-height:90px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{padding:13px 15px;border-radius:11px;background:var(--blue);color:white;font-weight:bold;width:100%;margin-top:5px}.btn.secondary{background:#e3eefb;color:#134e87}.btn.danger{background:#d84444}.btn.small{width:auto;padding:8px 11px;font-size:13px;margin:0}.muted{color:#66809d;font-size:13px;line-height:1.8}.money-input{direction:ltr;text-align:right;font-weight:bold;font-size:19px;letter-spacing:.3px;font-variant-numeric:tabular-nums;background:#f7fbff!important}.voice{display:flex;align-items:center;gap:10px;background:#eaf8f4;border:1px solid #b9e7d9;border-radius:13px;padding:12px;margin:10px 0}.mic{width:55px;height:55px;border-radius:50%;background:#0caa9a;color:#fff;font-size:26px;box-shadow:0 0 0 5px #d4f1ea;flex-shrink:0}.voice p{font-size:13px;line-height:1.8;margin:0}.transaction{display:flex;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #e4edf6}.transaction:last-child{border-bottom:0}.txicon{font-size:23px;width:44px;height:44px;display:grid;place-items:center;border-radius:12px;background:#e8f4ff;flex-shrink:0}.txtext{flex:1;min-width:0}.txtext b{display:block;font-size:14px}.txtext small{color:#7187a1;display:block;margin-top:5px}.money{font-weight:bold;white-space:nowrap;font-size:14px}.in{color:#078d59}.out{color:#d83f3f}.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(560px,100%);display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border-top:1px solid #d8e6f5;padding:7px 3px calc(7px + env(safe-area-inset-bottom));z-index:5;box-shadow:0 -5px 15px #1c467013}.nav{background:transparent;color:#607895;font-size:11px;padding:5px 1px}.nav span{display:block;font-size:22px;margin-bottom:4px}.nav.active{color:#075fba;font-weight:bold}.checkrow{display:flex;align-items:center;gap:9px;padding:10px;border-bottom:1px solid #e5edf5}.checkrow input{width:21px;height:21px;accent-color:#087cbd;flex-shrink:0}.checkrow.done .rowtitle{text-decoration:line-through;color:#91a2b6}.settingsline{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #e5edf5;align-items:center}.pill{background:#e6f5ef;color:#087b53;border-radius:99px;padding:4px 9px;font-size:12px}footer{text-align:center;color:#6d89a8;font-size:12px;padding:14px}
+/* سررسید رنگی صفحه اول */
+.planner-cover{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:10px;align-items:center;margin:0 0 15px;padding:20px 17px;min-height:224px;border:2px solid #f8d780;border-radius:18px;color:white;background:linear-gradient(135deg,#ffb52e 0%,#f28a36 24%,#7949c9 25%,#5044b8 57%,#0874b8 100%);box-shadow:inset 5px 0 0 #ffffff55,inset 0 0 0 5px #ffffff1c,0 10px 20px #283e8130}.planner-cover:before{content:"";position:absolute;z-index:-1;top:0;bottom:0;right:8px;width:8px;background:linear-gradient(90deg,#572c8a99,#ffffff55,#ffffff10);border-radius:7px}.cover-kicker{display:inline-block;padding:5px 9px;border-radius:20px;background:#fff3c52e;border:1px solid #fff8cf99;color:#fff8cf;font-size:11px;font-weight:bold;margin-bottom:8px}.cover-title{margin:0;color:#fff;font-size:21px;line-height:1.7;text-shadow:0 2px 4px #19286f55}.cover-subtitle{margin:3px 0 10px;font-size:12px;color:#fff5cf;line-height:1.8}.cover-date{font-size:12px;line-height:1.9;color:white;text-shadow:0 1px 2px #31205e88}.cover-controls{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}.cover-button{border:1px solid #ffffff88;background:#ffffff20;color:white;border-radius:9px;padding:7px 9px;font-size:11px;font-weight:bold}.cover-emblem{align-self:center;justify-self:center;display:flex;flex-direction:column;align-items:center;gap:9px}.cover-book-icon{display:grid;place-items:center;width:83px;height:100px;border-radius:9px 15px 15px 9px;background:linear-gradient(145deg,#fff2ac,#ffd96c 35%,#ff9a2f 36%,#ec6f31);border:3px solid #fff4bf;box-shadow:inset 7px 0 0 #c9662c4d,5px 7px 0 #26358d77,0 9px 18px #1d225f55;font-size:40px;transform:rotate(-4deg)}.cover-emblem small{font-size:10px;color:#fff6ca;text-align:center;white-space:nowrap}.clock-wrap{display:flex;align-items:center;gap:8px;margin-top:7px}.digital-clock{font-size:25px;font-weight:bold;letter-spacing:1px;color:#fff7c9;text-shadow:0 2px 5px #2e206b88;direction:ltr;font-variant-numeric:tabular-nums}.analog-clock{width:82px;height:82px;position:relative;border-radius:50%;background:radial-gradient(circle at 35% 25%,#fffef0,#fff1ad 65%,#f8c65d);border:3px solid #fff5c9;box-shadow:0 3px 10px #27205a66,inset 0 0 0 3px #e4a144;flex-shrink:0}.clock-number{position:absolute;color:#4e398a;font-weight:bold;font-size:10px;line-height:1}.n12{top:5px;left:50%;transform:translateX(-50%)}.n3{right:6px;top:50%;transform:translateY(-50%)}.n6{bottom:5px;left:50%;transform:translateX(-50%)}.n9{left:6px;top:50%;transform:translateY(-50%)}.clock-hand{position:absolute;left:50%;bottom:50%;transform-origin:50% 100%;border-radius:8px;z-index:2}.clock-hand.hour{width:4px;height:22px;background:#3f347b;margin-left:-2px}.clock-hand.minute{width:3px;height:29px;background:#bd5933;margin-left:-1.5px}.clock-hand.second{width:2px;height:32px;background:#0e9c99;margin-left:-1px}.clock-pivot{position:absolute;z-index:3;width:8px;height:8px;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;background:#4d368e;border:1px solid white}#coverClockWrap[data-mode="digital"] .analog-clock{display:none}#coverClockWrap[data-mode="analog"] .digital-clock{display:none}.cover-clock-meta{font-size:10px;line-height:1.7;color:#fff4c6;max-width:90px}.note-book{position:relative;overflow:hidden;border:1px solid #d8c89e;border-radius:9px;padding:16px 13px 15px;background-color:#fffdf4;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 38px,#b8d7f1 39px,#b8d7f1 40px);box-shadow:0 7px 18px #17365b16}.note-book:before{content:"";position:absolute;top:0;bottom:0;right:40px;width:1px;background:#e6a6a6;opacity:.8;pointer-events:none}.notebook-title{font-size:19px;color:#154f88;margin:0 0 10px;padding:0 0 9px;border-bottom:2px solid #d6e2e9;position:relative}.notebook-date{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;background:#eef6ff;border:1px solid #d4e4f5;border-radius:9px;padding:8px 6px;font-size:12px;color:#285e92;line-height:1.7;margin-bottom:10px;position:relative}.notebook-form{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(105px,.55fr);gap:8px;align-items:end;margin:9px 0 12px}.notebook-form input{min-width:0;width:100%;border:0;border-bottom:1px dashed #8fb0d1;border-radius:0;background:#ffffff75;padding:10px 6px;color:#154f88;outline:none;font-family:"Segoe Print","Comic Sans MS",Tahoma,sans-serif;font-size:15px;font-style:italic}.notebook-form input:focus{border-bottom:2px solid #2878c9;background:#fff9}.notebook-form .btn{grid-column:1/-1;margin-top:1px}.invoice-head{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 110px 31px;gap:6px;align-items:center;font-size:12px;font-weight:bold;color:#577a9b;border-bottom:1px solid #b8cfe4;padding:7px 1px}.invoice-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 110px 31px;gap:6px;align-items:center;min-height:41px;padding:5px 1px;border-bottom:1px dashed #b2cde6;color:#164e85;font-family:"Segoe Print","Comic Sans MS",Tahoma,sans-serif;font-size:15px;font-style:italic}.item-label{display:flex;align-items:center;gap:7px;min-width:0;overflow-wrap:anywhere}.item-label input{width:17px;height:17px;flex-shrink:0;accent-color:#087cbd}.item-label span{min-width:0}.invoice-row.done .item-label span{text-decoration:line-through;color:#91a2b6}.invoice-amount{text-align:left;white-space:nowrap;font-size:13px;font-weight:bold;color:#175a98;font-family:Tahoma,sans-serif;font-style:normal}.invoice-delete{background:#fae5e4;color:#b23a38;border-radius:7px;padding:5px 0;font-size:12px}.invoice-total{position:relative;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:13px;padding:10px 5px 4px;border-top:2px double #88acd0;font-weight:bold;color:#103f73}.invoice-total strong{font-size:17px;color:#0b8b5a;white-space:nowrap}.invoice-empty{position:relative;color:#8a9db0;padding:10px 0;font-size:13px}.free-writing{position:relative;width:100%;min-height:115px;resize:vertical;border:0;border-top:1px solid #c2d8ed;border-radius:0;background-color:transparent;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,#b8d7f1 32px,#b8d7f1 33px);line-height:33px;padding:0 8px;color:#164e85;font-family:"Segoe Print","Comic Sans MS",Tahoma,sans-serif;font-size:16px;font-style:italic;outline:none}.floating-mic{position:fixed;right:max(13px,calc((100vw - 560px)/2 + 13px));bottom:calc(102px + env(safe-area-inset-bottom));z-index:20;width:59px;height:59px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#12b8aa,#0879ad);color:white;font-size:28px;border:3px solid white;box-shadow:0 5px 18px #034d7a55,0 0 0 5px #d7f3f0}.floating-recorder{position:fixed;right:max(17px,calc((100vw - 560px)/2 + 17px));bottom:calc(178px + env(safe-area-inset-bottom));z-index:21;width:52px;height:52px;border-radius:50%;background:#c62828;color:#fff;border:3px solid #fff;box-shadow:0 4px 14px #0002;font-size:23px;display:flex;align-items:center;justify-content:center}.floating-recorder.recording{background:#7c1515;animation:recordPulse 1.2s infinite}@keyframes recordPulse{50%{box-shadow:0 0 0 7px #ffcdd2,0 4px 14px #0002}}.floating-mic small{position:absolute;right:0;bottom:-19px;font-size:10px;white-space:nowrap;color:#0b598b;background:white;border-radius:6px;padding:2px 5px;box-shadow:0 2px 5px #00000012}.voice-toast{position:fixed;z-index:30;left:50%;bottom:calc(174px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(88%,440px);display:none;background:#173e6c;color:white;text-align:center;padding:12px 16px;border-radius:12px;box-shadow:0 8px 24px #101f3c45;font-size:14px;line-height:1.8}.voice-toast.show{display:block;animation:toastIn .18s ease-out}@keyframes toastIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}.speech-status{font-size:12px;padding:8px;border-radius:8px;background:#eef8f5;color:#087653;line-height:1.7}.calendar-head{display:flex;align-items:center;justify-content:space-between}.calendar-head button{background:#edf5ff;color:#0759a2;border-radius:9px;padding:8px 13px;font-size:20px}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:13px;text-align:center}.dayname{font-size:11px;color:#65809f;padding:5px 0}.day{padding:9px 0;border-radius:9px;font-size:13px;background:#f6f9fd}.day.today{background:#0870cc;color:white;font-weight:bold}.day.empty{background:transparent}
+@media(min-width:600px){body{padding:18px 0}.app{border-radius:24px;overflow:hidden;min-height:calc(100vh - 36px)}.bottom{bottom:18px;border-radius:0 0 24px 24px}.floating-mic{bottom:calc(120px + env(safe-area-inset-bottom))}}@media(max-width:390px){.planner-cover{grid-template-columns:minmax(0,1fr) 78px;padding:16px 12px;gap:6px}.cover-title{font-size:18px}.cover-book-icon{width:65px;height:83px;font-size:32px}.cover-emblem small{font-size:9px}.cover-button{padding:7px 6px;font-size:10px}.analog-clock{width:70px;height:70px}.invoice-head,.invoice-row{grid-template-columns:minmax(0,1fr) 88px 28px}.note-book{padding:14px 8px}.note-book:before{right:31px}.invoice-amount{font-size:11px}.bottom .nav{font-size:10px}}
+
+/* دفتر روزانه فقط برای نوشتن فهرست و یادداشت، نه فاکتور */
+.notebook-form.note-only{grid-template-columns:minmax(0,1fr) auto;align-items:center}
+.notebook-form.note-only .btn{grid-column:auto;width:auto;white-space:nowrap;padding:11px 13px}
+.note-only input{font-family:"Segoe Print","Comic Sans MS",Tahoma,sans-serif!important;font-style:italic!important;font-size:16px!important}
+.note-list{position:relative;min-height:48px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 38px,#b8d7f1 39px,#b8d7f1 40px);padding:0 4px 4px 0}
+.note-entry{display:grid;grid-template-columns:24px minmax(0,1fr) 34px;gap:8px;align-items:center;min-height:40px;border-bottom:1px solid #d8e6f2;padding:5px 0;color:#15518c;font-family:"Segoe Print","Comic Sans MS",Tahoma,sans-serif;font-size:15px}
+.note-entry input[type=checkbox]{width:20px;height:20px;accent-color:#0a8a65}
+.note-entry .note-text{overflow-wrap:anywhere;line-height:1.65}
+.note-entry.done .note-text{text-decoration:line-through;color:#8aa0b4}
+.note-delete{background:#ffe8e6;color:#bd3e36;border-radius:8px;font-weight:bold;width:30px;height:29px;font-size:19px}
+.reminder-card{border-top:4px solid #ffb43b;background:linear-gradient(180deg,#fffaf0,#fff)}
+.reminder-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.reminder-form input[type=text],.reminder-form input[type=date],.reminder-form input[type=time]{width:100%;padding:12px;border:1px solid #d5dfec;border-radius:10px;background:#fff}
+.reminder-repeat{display:flex;align-items:center;gap:9px;background:#fff5d9;border-radius:10px;padding:11px;font-size:14px;margin:10px 0}
+.reminder-repeat input{width:20px;height:20px;accent-color:#e59a12}
+.reminder-row{padding:12px 0;border-bottom:1px dashed #e6d3ab;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.reminder-row:last-child{border-bottom:0}
+.reminder-row b{display:block;color:#7b4b06;margin-bottom:5px}
+.reminder-row small{color:#8c7b5f;line-height:1.7}
+.reminder-actions{display:flex;gap:5px;flex-direction:column}
+.reminder-actions button{border-radius:8px;padding:7px 9px;font-size:12px}
+.reminder-done{background:#e2f5e9;color:#08774d}.reminder-remove{background:#ffe6e4;color:#b62e2a}
+.reminder-status{font-size:12px;line-height:1.8;color:#6d839d;margin-top:7px}
+.voice-confirmation{margin:10px 0;background:#fff3d8;border:1px solid #f3cf81;border-radius:12px;padding:12px;color:#754b05;font-size:14px;line-height:1.9}
+@media(max-width:390px){.notebook-form.note-only{grid-template-columns:1fr}.notebook-form.note-only .btn{width:100%}.reminder-fields{grid-template-columns:1fr 1fr}}
+
+
+.recorder-card{border-top:4px solid #0aa7a0;background:linear-gradient(180deg,#f0fffd,#fff)}
+.recorder-controls{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}
+.recorder-controls button{flex:1;min-width:135px}
+.recorder-controls button:disabled{opacity:.45;cursor:not-allowed}
+.recorder-status{font-size:13px;line-height:1.8;padding:10px 12px;background:#e8f6ff;border-radius:10px;color:#15517b}
+.recordings-list{display:grid;gap:10px;margin-top:12px}
+.recording-item{background:#fff;border:1px solid #d9e7ef;border-radius:12px;padding:12px;min-width:0}
+.recording-item strong{display:block;overflow-wrap:anywhere;color:#123f65}
+.recording-item small{display:block;color:#607b91;line-height:1.8;margin:4px 0}
+.recording-item audio{width:100%;height:38px;margin:6px 0}
+.recording-actions{display:flex;gap:7px;flex-wrap:wrap}
+.recording-actions button{font-size:12px;padding:8px 10px;border-radius:8px}
+.recording-download{background:#e1f5eb;color:#087347}.recording-delete{background:#ffe8e6;color:#a62b25}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand"><div class="logo">📒🔊</div><div><h1>حسابداری شخصی برای سالمندان</h1><p>ساده • سریع • با مرامِ سخنگو</p></div></div></header>
+<main>
+<section id="home" class="page active">
+  <div class="planner-cover">
+    <div class="cover-copy">
+      <span class="cover-kicker">سررسید مالی • نسخه شخصی</span>
+      <h2 class="cover-title">دفتر دخل‌وخرج<br>من و با مرام</h2>
+      <p class="cover-subtitle">یادداشت، خرید و حساب‌وکتاب؛ راحت و خوانا</p>
+      <div class="cover-date" id="coverDayDate">امروز • تاریخ فارسی</div>
+      <div class="clock-wrap" id="coverClockWrap" data-mode="digital">
+        <div class="digital-clock" id="digitalClock">--:--:--</div>
+        <div class="analog-clock" id="analogClock" aria-label="ساعت آنالوگ"><span class="clock-number n12">۱۲</span><span class="clock-number n3">۳</span><span class="clock-number n6">۶</span><span class="clock-number n9">۹</span><span class="clock-hand hour" id="hourHand"></span><span class="clock-hand minute" id="minuteHand"></span><span class="clock-hand second" id="secondHand"></span><span class="clock-pivot"></span></div>
+        <div class="cover-clock-meta" id="clockCaption">ساعت محلی دستگاه</div>
+      </div>
+      <div class="cover-controls"><button class="cover-button" onclick="openPage('settings')">⚙ تنظیمات</button><button class="cover-button" onclick="openPage('notes')">✎ دفتر روزانه</button><button class="cover-button" onclick="openPage('shopping')">🛒 خرید روزانه</button></div>
+    </div><div class="cover-emblem"><div class="cover-book-icon">📒</div><small>دفتر من، حساب من</small></div>
+  </div>
+  <div class="balance"><div class="label">💳 موجودی فعلی</div><div class="amount" id="balance">۰</div><div class="currency">تومان</div></div>
+  <div class="quick"><button class="tile green" onclick="openPage('addExpense')"><span>▣</span>ثبت هزینه</button><button class="tile blue" onclick="openPage('addIncome')"><span>＋</span>ثبت درآمد</button><button class="tile orange" onclick="openPage('notes')"><span>▤</span>دفتر روزانه</button><button class="tile purple" onclick="openPage('shopping')"><span>🛒</span>خرید روزانه</button></div>
+  <div class="voice"><button class="mic" onclick="greetAndSpeak()" aria-label="با مرام صحبت کن">🔊</button><div><b>با مرام، دستیار سخنگو</b><p id="voiceStatus">برای شنیدن راهنما، دکمه بلندگو را بزنید. برای ثبت با صدا، میکروفون شناور پایین صفحه است.</p></div></div>
+  <div class="card"><h2>آخرین تراکنش‌ها</h2><div id="recentList" class="muted">هنوز تراکنشی ثبت نشده است.</div><button class="btn secondary" onclick="openPage('transactions')">مشاهده همه تراکنش‌ها</button></div>
+</section>
+<section id="addExpense" class="page"><div class="card"><h2>ثبت هزینه</h2><div class="field"><label for="expenseTitle">عنوان هزینه</label><input id="expenseTitle" placeholder="مثلاً خرید نان"></div><div class="row"><div class="field"><label for="expenseAmount">مبلغ (تومان)</label><input id="expenseAmount" class="money-input" type="text" inputmode="numeric" autocomplete="off" placeholder="مثلاً ۵۰٬۰۰۰" oninput="formatMoneyField(this)"></div><div class="field"><label for="expenseCategory">دسته‌بندی</label><select id="expenseCategory"><option>خوراک و خرید</option><option>دارو و درمان</option><option>قبوض</option><option>رفت‌وآمد</option><option>خانه</option><option>سایر</option></select></div></div><div class="field"><label for="expenseNote">توضیحات (اختیاری)</label><input id="expenseNote" placeholder="توضیح کوتاه"></div><button class="btn" onclick="saveTx('out')">ثبت هزینه</button><button class="btn secondary" onclick="openPage('home')">بازگشت</button></div></section>
+<section id="addIncome" class="page"><div class="card"><h2>ثبت درآمد</h2><div class="field"><label for="incomeTitle">عنوان درآمد</label><input id="incomeTitle" placeholder="مثلاً حقوق بازنشستگی"></div><div class="field"><label for="incomeAmount">مبلغ (تومان)</label><input id="incomeAmount" class="money-input" type="text" inputmode="numeric" autocomplete="off" placeholder="مثلاً ۱٬۰۰۰٬۰۰۰" oninput="formatMoneyField(this)"></div><div class="field"><label for="incomeNote">توضیحات (اختیاری)</label><input id="incomeNote" placeholder="توضیح کوتاه"></div><button class="btn" onclick="saveTx('in')">ثبت درآمد</button><button class="btn secondary" onclick="openPage('home')">بازگشت</button></div></section>
+<section id="notes" class="page">
+  <div class="card" style="background:#f7faff">
+    <div class="note-book">
+      <h2 class="notebook-title">دفتر یادداشت روزانه</h2>
+      <div class="notebook-date" id="noteDate">روز هفته • تاریخ • ساعت</div>
+      <p class="muted" style="margin:0 0 9px">فقط یادداشت کنید؛ مثل «گوشت ۱.۵ کیلو»، «پیاز ۲ کیلو»، «نان بربری ۲۰ عدد».</p>
+      <div class="notebook-form note-only">
+        <input id="newNote" placeholder="چیزی برای یادداشت بنویسید..." aria-label="متن یادداشت روزانه" autocomplete="off">
+        <button class="btn" onclick="addNote(false)">＋ افزودن</button>
+      </div>
+      <div id="notesList" class="note-list"></div>
+      <p class="muted" style="margin:10px 0 0">برای نوشتن با صدا، میکروفون شناور را بزنید. بعد از شنیدن متن، دکمه «افزودن» را بزنید.</p>
+    </div>
+    <div class="field" style="margin-top:18px"><label for="freeNote">یادداشت آزاد بلند</label><textarea class="free-writing" id="freeNote" placeholder="اینجا هرچه لازم دارید بنویسید؛ مثل یک صفحه دفتر..."></textarea><button class="btn secondary" onclick="saveFreeNote()">ذخیره یادداشت آزاد</button></div>
+  </div>
+
+  <div class="card recorder-card" id="voiceRecorderCard">
+    <h2>ضبط صوت شناور</h2>
+    <p class="muted">در بازار یا جای شلوغ، به‌جای تبدیل فوری صدا به متن، صحبتتان را ضبط کنید. فایل‌ها در همین برنامه نگهداری می‌شوند و هر زمان خواستید می‌توانید پخش یا دانلودشان کنید.</p>
+    <div class="field"><label for="recordCategory">این صدا بعداً به کدام بخش اضافه شود؟</label>
+      <select id="recordCategory">
+        <option value="یادداشت روزانه">یادداشت روزانه</option>
+        <option value="درآمد">درآمد</option>
+        <option value="هزینه">هزینه</option>
+        <option value="خرید روزانه">خرید روزانه</option>
+        <option value="یادآور">یادآور</option>
+        <option value="سایر">سایر</option>
+      </select>
+    </div>
+    <div class="recorder-controls">
+      <button class="btn" id="recordStart" type="button" onclick="startAudioRecording()">● شروع ضبط</button>
+      <button class="btn secondary" id="recordStop" type="button" onclick="stopAudioRecording()" disabled>■ پایان و ذخیره</button>
+    </div>
+    <div id="recordingStatus" class="recorder-status" role="status">آماده ضبط؛ برای شروع، اجازه استفاده از میکروفون را بدهید.</div>
+    <div id="recordingsList" class="recordings-list"></div>
+    <p class="muted">نکته: برای اطمینان، فایل مهم را با دکمه «دانلود فایل» در گوشی یا رایانه نیز ذخیره کنید. ضبط صدا به اجازه میکروفون نیاز دارد.</p>
+  </div>
+  <div class="card reminder-card">
+    <h2>⏰ یادآورهای من</h2>
+    <p class="muted">مثلاً «ساعت ۱۰ صبح قبض آب را پرداخت کنم» یا «چک را به بانک ببرم».</p>
+    <div class="reminder-form">
+      <div class="field"><label for="reminderTitle">چه چیزی را یادآوری کنم؟</label><input id="reminderTitle" type="text" placeholder="مثلاً پرداخت قبض آب" maxlength="180"></div>
+      <div class="reminder-fields">
+        <div class="field"><label for="reminderDate">تاریخ</label><input id="reminderDate" type="date"></div>
+        <div class="field"><label for="reminderTime">ساعت</label><input id="reminderTime" type="time" value="10:00"></div>
+      </div>
+      <label class="reminder-repeat"><input id="reminderDaily" type="checkbox"> هر روز در همین ساعت یادآوری کن</label>
+      <button class="btn" onclick="addReminder()">＋ ثبت یادآور</button>
+      <button class="btn secondary" onclick="enableReminderNotifications()">فعال‌سازی اعلان دستگاه</button>
+      <div id="reminderStatus" class="reminder-status">برای به‌صدا درآمدن یادآور، این برنامه و مرورگر باید باز بماند. اجازه اعلان دستگاه را نیز می‌توانید فعال کنید.</div>
+    </div>
+    <h3 style="font-size:16px;color:#8a5a0b;margin:20px 0 8px">یادآورهای ثبت‌شده</h3>
+    <div id="remindersList"></div>
+  </div>
+</section>
+<section id="shopping" class="page"><div class="card"><h2>خرید روزانه</h2><p class="muted">خرید را وارد کنید؛ مبلغ با سه‌رقمی جدا می‌شود و هزینه به حساب شما هم افزوده می‌شود.</p><div class="notebook-date" id="shoppingDate">روز هفته • تاریخ • ساعت</div><div class="field"><label for="shoppingTitle">چه چیزی خریدید؟</label><input id="shoppingTitle" placeholder="مثلاً نان و شیر"></div><div class="field"><label for="shoppingAmount">مبلغ خرید (تومان)</label><input id="shoppingAmount" class="money-input" type="text" inputmode="numeric" autocomplete="off" placeholder="مثلاً ۱۸۰٬۰۰۰" oninput="formatMoneyField(this)"></div><button class="btn green" onclick="addShopping(false)">ثبت خرید و ثبت هزینه</button><div class="invoice-total"><span>جمع خریدهای این صفحه</span><strong id="shoppingTotal">۰ تومان</strong></div><div class="invoice-head"><span>شرح خرید</span><span style="text-align:left">مبلغ (تومان)</span><span></span></div><div id="shoppingList"></div></div></section>
+<section id="transactions" class="page"><div class="card"><h2>خلاصه حساب</h2><div class="settingsline"><span>مجموع درآمدها</span><b id="sumIn" class="in">۰ تومان</b></div><div class="settingsline"><span>مجموع هزینه‌ها</span><b id="sumOut" class="out">۰ تومان</b></div><div class="settingsline"><span>مانده فعلی</span><b id="sumNet">۰ تومان</b></div></div><div class="card"><h2>همه تراکنش‌ها</h2><div id="allList"></div><button class="btn secondary" onclick="exportData()">پشتیبان‌گیری از اطلاعات</button><button class="btn danger" onclick="clearTransactions()">پاک‌کردن همه تراکنش‌ها</button></div></section>
+<section id="calendar" class="page"><div class="card"><h2>تقویم فارسی</h2><p class="muted">تقویم ماهانه ساده؛ تاریخ روز از تقویم فارسی دستگاه خوانده می‌شود.</p><div class="calendar-head"><button onclick="changeMonth(-1)">‹</button><b id="monthLabel">ماه جاری</b><button onclick="changeMonth(1)">›</button></div><div class="calendar-grid" id="calendarGrid"></div><button class="btn secondary" onclick="openPage('home')">بازگشت به جلد سررسید</button></div></section>
+<section id="settings" class="page"><div class="card"><h2>تنظیمات سررسید و صدا</h2><div class="settingsline"><span>ذخیره اطلاعات</span><span class="pill">روی همین دستگاه</span></div><div class="settingsline"><span>نیاز به اینترنت برای دفتر</span><b>خیر</b></div><div class="field"><label for="clockType">نمایش ساعت روی جلد</label><select id="clockType" onchange="setClockType(this.value)"><option value="digital">ساعت دیجیتال</option><option value="analog">ساعت آنالوگ</option></select></div><div class="settingsline"><span>پاسخ‌گویی صوتی با مرام</span><label><input id="speechToggle" type="checkbox" checked onchange="setSpeechEnabled(this.checked)"> فعال باشد</label></div><button class="btn" onclick="testSpeech()">🔊 آزمایش صدای با مرام</button><p class="muted" id="speechSettingStatus">اگر صدا پخش نشد، صدای دستگاه و پشتیبانی صدای فارسی مرورگر را بررسی کنید.</p><button class="btn secondary" onclick="openPage('calendar')">📅 باز کردن تقویم فارسی</button><button class="btn secondary" onclick="exportData()">دریافت نسخه پشتیبان</button><div class="field"><label for="backupImportFile">بازیابی اطلاعات از نسخه پشتیبان</label><input id="backupImportFile" type="file" accept="application/json,.json"><button class="btn secondary" type="button" onclick="importData()">بازیابی نسخه پشتیبان</button><p class="muted">بازیابی، اطلاعات فعلی این برنامه را با اطلاعات فایل پشتیبان جایگزین می‌کند. قبل از ادامه، نسخه پشتیبان فعلی را نگه دارید.</p></div><div class="field"><label for="pin">رمز چهاررقمی (طرح اولیه)</label><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="قفل واقعی هنوز فعال نیست"></div><p class="muted">داده‌ها در حافظه همین مرورگر نگهداری می‌شوند. برای پیشگیری از دست‌رفتن اطلاعات، مرتب نسخه پشتیبان بگیرید. شنیدن گفتار و تبدیل گفتار به متن به مرورگر و صدای نصب‌شده روی دستگاه وابسته است.</p></div></section>
+</main>
+<footer>نسخه آزمایشی • دفتر روزانه، خرید و دستیار سخنگو</footer>
+<nav class="bottom"><button class="nav active" data-page="home" onclick="openPage('home')"><span>⌂</span>سررسید</button><button class="nav" data-page="notes" onclick="openPage('notes')"><span>✎</span>دفتر</button><button class="nav" data-page="shopping" onclick="openPage('shopping')"><span>🛒</span>خرید روزانه</button><button class="nav" data-page="transactions" onclick="openPage('transactions')"><span>▣</span>حساب</button><button class="nav" data-page="settings" onclick="openPage('settings')"><span>⚙</span>تنظیمات</button></nav>
+<button id="floatingRecorder" class="floating-recorder" type="button" onclick="toggleFloatingRecording()" aria-label="ضبط صوت شناور" title="شروع یا پایان ضبط صوت">●</button><button id="floatingMic" class="floating-mic" type="button" onclick="floatingMicAction()" aria-label="ثبت صوتی در هر صفحه" title="ثبت با صدا؛ برای لغو بگویید پاک">🎙<small>بگویید: پاک</small></button><div id="voiceToast" class="voice-toast" role="status" aria-live="polite"></div>
+</div>
+<script>
+'use strict';
+const KEY='senior_accounting_v1', NOTEKEY='senior_notes_v1', FREEKEY='senior_free_note_v1', CLOCKKEY='senior_clock_type_v1', SHOPKEY='senior_shopping_v1', SPEECHKEY='senior_speech_enabled_v1', REMKEY='senior_reminders_v1';
+const $=id=>document.getElementById(id);
+const safeParse=(key,fallback)=>{try{const x=JSON.parse(localStorage.getItem(key)||'null');return x??fallback}catch(e){return fallback}};
+let txs=safeParse(KEY,[]), notes=safeParse(NOTEKEY,[]), shoppingItems=safeParse(SHOPKEY,[]), reminders=safeParse(REMKEY,[]), monthOffset=0, voiceTarget='tx', toastTimer=null, pendingNoteVoice=false, pendingShoppingVoice=false, pendingVoiceTransaction=false, alarmAudioContext=null;
+let speechEnabled=localStorage.getItem(SPEECHKEY)!=='false';let clockType=localStorage.getItem(CLOCKKEY)||'digital';
+const fa=n=>Number(n||0).toLocaleString('fa-IR');
+function money(n){return fa(n)+' تومان'}
+function normalizeDigits(value){return String(value??'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d))}
+function parseAmount(value){if(typeof value==='number')return Number.isFinite(value)?value:0;const digits=normalizeDigits(value).replace(/[^0-9]/g,'');return digits?Number(digits):0}
+function formatMoneyField(input){if(!input)return;let raw=normalizeDigits(input.value).replace(/[^0-9]/g,'').replace(/^0+(?=\d)/,'');let formatted=raw.replace(/\B(?=(\d{3})+(?!\d))/g,'٬');input.value=formatted.replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]);}
+function attachMoneyFormatting(){['expenseAmount','incomeAmount','shoppingAmount'].forEach(id=>{const el=$(id);if(el)el.addEventListener('blur',()=>formatMoneyField(el))})}
+function persistNotes(){localStorage.setItem(NOTEKEY,JSON.stringify(notes))}function persistShopping(){localStorage.setItem(SHOPKEY,JSON.stringify(shoppingItems))}
+function saveTx(type,source='manual'){const title=$(type==='out'?'expenseTitle':'incomeTitle').value.trim(),amount=parseAmount($(type==='out'?'expenseAmount':'incomeAmount').value);if(!title||!amount||amount<=0){alert('عنوان و مبلغ معتبر را وارد کنید.');say('لطفاً عنوان و مبلغ را بررسی کنید.');return}if(pendingVoiceTransaction)source='voice';txs.unshift({id:Date.now(),type,title,amount,category:type==='out' ? $('expenseCategory').value : 'درآمد',note:$(type==='out'?'expenseNote':'incomeNote').value.trim(),source,date:jalaliDate()});pendingVoiceTransaction=false;localStorage.setItem(KEY,JSON.stringify(txs));render();[$(type==='out'?'expenseTitle':'incomeTitle'),$(type==='out'?'expenseAmount':'incomeAmount'),$(type==='out'?'expenseNote':'incomeNote')].forEach(x=>x.value='');openPage('home');say((type==='in'?'درآمد':'هزینه')+' ثبت شد. '+title+'، مبلغ '+money(amount));}
+function openPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='notes')renderNotes();if(id==='shopping')renderShopping();if(id==='calendar')renderCalendar();if(id==='settings'){if($('clockType'))$('clockType').value=clockType;if($('speechToggle'))$('speechToggle').checked=speechEnabled}window.scrollTo({top:0,behavior:'smooth'})}
+function render(){const inc=txs.filter(t=>t.type==='in').reduce((s,t)=>s+Number(t.amount||0),0),out=txs.filter(t=>t.type==='out').reduce((s,t)=>s+Number(t.amount||0),0);$('balance').textContent=fa(inc-out);const markup=arr=>arr.length?arr.map(t=>`<div class="transaction"><div class="txicon">${t.type==='in'?'💰':(t.category==='خوراک و خرید'?'🛒':t.category==='دارو و درمان'?'💊':'🧾')}</div><div class="txtext"><b>${esc(t.title)}</b><small>${esc(t.category||'')} • ${esc(t.date||'')}</small></div><div class="money ${t.type}">${t.type==='in'?'+':'−'} ${fa(t.amount)}<small style="display:block;font-weight:normal">تومان</small></div></div>`).join(''):'<p class="muted">هنوز تراکنشی ثبت نشده است.</p>';if($('recentList'))$('recentList').innerHTML=markup(txs.slice(0,4));if($('allList'))$('allList').innerHTML=markup(txs);const incSum=$('sumIn'),outSum=$('sumOut'),net=$('sumNet');if(incSum)incSum.textContent=money(inc);if(outSum)outSum.textContent=money(out);if(net)net.textContent=money(inc-out)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function jalaliDate(){try{return new Intl.DateTimeFormat('fa-IR-u-ca-persian',{year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}catch(e){return new Date().toLocaleDateString('fa-IR')}}
+function updateDateTime(){const now=new Date();let fullDate;try{fullDate=new Intl.DateTimeFormat('fa-IR-u-ca-persian',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(now)}catch(e){fullDate=now.toLocaleDateString('fa-IR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}const clock=now.toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});if($('coverDayDate'))$('coverDayDate').textContent=fullDate+' • ساعت '+clock;if($('noteDate'))$('noteDate').textContent='روز '+fullDate+' • ساعت '+clock;if($('shoppingDate'))$('shoppingDate').textContent='روز '+fullDate+' • ساعت '+clock}
+function updateClock(){const now=new Date();if($('digitalClock'))$('digitalClock').textContent=now.toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});const seconds=now.getSeconds(),minutes=now.getMinutes(),hours=now.getHours()%12;if($('hourHand'))$('hourHand').style.transform=`rotate(${hours*30+minutes*.5}deg)`;if($('minuteHand'))$('minuteHand').style.transform=`rotate(${minutes*6+seconds*.1}deg)`;if($('secondHand'))$('secondHand').style.transform=`rotate(${seconds*6}deg)`}
+function setClockType(type){clockType=type==='analog'?'analog':'digital';localStorage.setItem(CLOCKKEY,clockType);if($('coverClockWrap'))$('coverClockWrap').dataset.mode=clockType;if($('clockType'))$('clockType').value=clockType;if($('clockCaption'))$('clockCaption').textContent=clockType==='analog'?'ساعت آنالوگ':'ساعت دیجیتال';updateClock()}
+function renderNotes(){
+  // Old versions stored optional amounts, but the daily notebook is now a plain list.
+  $('notesList').innerHTML=notes.map((n,i)=>`<div class="note-entry ${n.done?'done':''}"><input type="checkbox" aria-label="انجام شد" ${n.done?'checked':''} onchange="toggleNote(${i},this.checked)"><span class="note-text">${esc(n.text)}</span><button class="note-delete" type="button" aria-label="حذف یادداشت" onclick="deleteNote(${i})">×</button></div>`).join('')||'<div class="muted" style="padding:10px 3px">دفتر خالی است؛ اولین یادداشت را بنویسید.</div>';
+  $('freeNote').value=localStorage.getItem(FREEKEY)||'';updateDateTime();renderReminders();
+}
+function addNote(fromVoice=false){const text=$('newNote').value.trim();if(!text){say('لطفاً متن یادداشت را بنویسید یا با صدا بگویید.');$('newNote').focus();return}notes.push({id:Date.now(),text,done:false,source:fromVoice||pendingNoteVoice?'voice':'manual',date:jalaliDate()});persistNotes();$('newNote').value='';pendingNoteVoice=false;renderNotes();say('یادداشت به دفتر اضافه شد: '+text);$('newNote').focus()}
+function toggleNote(i,v){notes[i].done=v;persistNotes();renderNotes()}
+function deleteNote(i){const n=notes.splice(i,1)[0];persistNotes();renderNotes();say('از دفتر حذف شد: '+(n?.text||'مورد'))}
+function saveFreeNote(){localStorage.setItem(FREEKEY,$('freeNote').value);say('یادداشت آزاد ذخیره شد.')}
+function persistReminders(){localStorage.setItem(REMKEY,JSON.stringify(reminders))}
+function localDateInputValue(date=new Date()){const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${d}`}
+function initReminderForm(){if($('reminderDate')&&!$('reminderDate').value)$('reminderDate').value=localDateInputValue()}
+function addReminder(){
+  const title=$('reminderTitle').value.trim(),date=$('reminderDate').value,time=$('reminderTime').value,daily=$('reminderDaily').checked;
+  if(!title||!date||!time){alert('عنوان یادآور، تاریخ و ساعت را وارد کنید.');return}
+  const due=new Date(date+'T'+time+':00');if(Number.isNaN(due.getTime())){alert('تاریخ یا ساعت معتبر نیست.');return}
+  if(!daily&&due.getTime()<=Date.now()){alert('برای یادآور یک‌باره، ساعت یا تاریخ آینده را انتخاب کنید.');return}
+  try{if(!alarmAudioContext){const AC=window.AudioContext||window.webkitAudioContext;if(AC)alarmAudioContext=new AC()}if(alarmAudioContext&&alarmAudioContext.state==='suspended')alarmAudioContext.resume()}catch(e){}
+  const now=new Date(),today=localDateInputValue(),nowClock=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');const alreadyPastToday=daily&&date<=today&&time<=nowClock;reminders.unshift({id:Date.now(),title,date,time,daily,done:false,triggered:false,active:true,lastFiredDate:alreadyPastToday?today:''});persistReminders();$('reminderTitle').value='';renderReminders();say('یادآور ثبت شد: '+title+'، '+date+' ساعت '+time);$('reminderStatus').textContent='یادآور ذخیره شد. برای زنگ‌زدن در زمان مقرر، برنامه در مرورگر باز بماند.';
+}
+function enableReminderNotifications(){if(!('Notification' in window)){$('reminderStatus').textContent='اعلان دستگاه در این مرورگر در دسترس نیست؛ هنگام باز بودن برنامه از زنگ و صدای با مرام استفاده می‌شود.';return}Notification.requestPermission().then(permission=>{$('reminderStatus').textContent=permission==='granted'?'اعلان‌های دستگاه فعال شدند. مرورگر و این صفحه باید باز بمانند تا زمان یادآوری بررسی شود.': 'مجوز اعلان داده نشد؛ یادآور داخل برنامه همچنان کار می‌کند تا وقتی برنامه باز باشد.';say(permission==='granted'?'اعلان یادآورها فعال شد.':'مجوز اعلان فعال نشد. یادآور داخل برنامه همچنان در دسترس است.')}).catch(()=>{$('reminderStatus').textContent='فعالسازی اعلان ممکن نشد؛ از تنظیمات مرورگر مجوز اعلان را بررسی کنید.'})}
+function renderReminders(){const list=$('remindersList');if(!list)return;list.innerHTML=reminders.map((r,i)=>{const state=r.done?'انجام‌شده':r.triggered&&!r.daily?'زنگ زده':r.active===false?'متوقف':'در انتظار';return `<div class="reminder-row"><div><b>${esc(r.title)}</b><small>${faDateFromISO(r.date)} • ساعت ${esc(r.time)}${r.daily?' • تکرار هر روز':''}<br>وضعیت: ${state}</small></div><div class="reminder-actions"><button class="reminder-done" onclick="completeReminder(${i})">انجام شد</button><button class="reminder-remove" onclick="deleteReminder(${i})">حذف</button></div></div>`}).join('')||'<p class="muted">هنوز یادآوری ثبت نشده است.</p>';initReminderForm()}
+function faDateFromISO(value){if(!value)return '';const a=value.split('-').map(Number);if(a.length!==3)return value;const d=new Date(a[0],a[1]-1,a[2],12);return d.toLocaleDateString('fa-IR-u-ca-persian',{year:'numeric',month:'long',day:'numeric'})}
+function completeReminder(i){if(!reminders[i])return;reminders[i].done=true;reminders[i].active=false;persistReminders();renderReminders();say('یادآور انجام‌شده علامت خورد: '+reminders[i].title)}
+function deleteReminder(i){const r=reminders.splice(i,1)[0];persistReminders();renderReminders();say('یادآور حذف شد: '+(r?.title||''))}
+function playAlarm(){try{if(!alarmAudioContext){const AC=window.AudioContext||window.webkitAudioContext;if(AC)alarmAudioContext=new AC()}if(!alarmAudioContext)return;if(alarmAudioContext.state==='suspended')alarmAudioContext.resume();const ctx=alarmAudioContext;[0,0.32,0.64,1.1,1.42].forEach((delay,i)=>{const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='sine';osc.frequency.value=i%2?880:660;gain.gain.setValueAtTime(0.0001,ctx.currentTime+delay);gain.gain.exponentialRampToValueAtTime(.22,ctx.currentTime+delay+.025);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+delay+.23);osc.connect(gain);gain.connect(ctx.destination);osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+.25)})}catch(e){}}
+function fireReminder(r){const today=localDateInputValue();r.lastFiredDate=today;if(!r.daily){r.triggered=true;r.active=false}persistReminders();playAlarm();say('یادآوری: '+r.title,true);if('Notification' in window&&Notification.permission==='granted'){try{new Notification('یادآوری با مرام',{body:r.title,tag:'reminder-'+r.id,requireInteraction:true})}catch(e){}}renderReminders()}
+function checkReminders(){const now=new Date(),today=localDateInputValue(),clock=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');let changed=false;for(const r of reminders){if(r.done||r.active===false)continue;if(r.daily){if(today>=r.date&&clock>=r.time&&r.lastFiredDate!==today){fireReminder(r);changed=true}}else if(!r.triggered){const due=new Date(r.date+'T'+r.time+':00');if(!Number.isNaN(due.getTime())&&now>=due){fireReminder(r);changed=true}}}if(changed)persistReminders()}
+function renderShopping(){const total=shoppingItems.reduce((s,x)=>s+Number(x.amount||0),0);$('shoppingTotal').textContent=money(total);$('shoppingList').innerHTML=shoppingItems.map((x,i)=>`<div class="invoice-row ${x.done?'done':''}"><div class="item-label"><input type="checkbox" aria-label="انجام شد" ${x.done?'checked':''} onchange="toggleShopping(${i},this.checked)"><span>${esc(x.title)}</span></div><div class="invoice-amount">${fa(x.amount)}</div><button class="invoice-delete" type="button" onclick="deleteShopping(${i})" aria-label="حذف">×</button></div>`).join('')||'<div class="invoice-empty">هنوز خریدی ثبت نشده است.</div>';updateDateTime()}
+function addShopping(fromVoice=false){const title=$('shoppingTitle').value.trim(),amount=parseAmount($('shoppingAmount').value);if(!title||amount<=0){alert('نام خرید و مبلغ بیشتر از صفر را وارد کنید.');say('برای ثبت خرید، نام و مبلغ را وارد کنید.');return}const id=Date.now();const tx={id,type:'out',title:'خرید روزانه: '+title,amount,category:'خوراک و خرید',note:'ثبت از صفحه خرید روزانه',source:fromVoice||pendingShoppingVoice?'voice':'shopping',date:jalaliDate()};txs.unshift(tx);shoppingItems.unshift({id,title,amount,done:false,source:fromVoice||pendingShoppingVoice?'voice':'manual',txId:id,date:jalaliDate()});localStorage.setItem(KEY,JSON.stringify(txs));persistShopping();$('shoppingTitle').value='';$('shoppingAmount').value='';pendingShoppingVoice=false;render();renderShopping();say('خرید ثبت شد: '+title+'، '+money(amount)+' از حساب کسر شد.');}
+function toggleShopping(i,v){shoppingItems[i].done=v;persistShopping();renderShopping()}
+function deleteShopping(i,quiet=false){const item=shoppingItems.splice(i,1)[0];if(item&&item.txId){txs=txs.filter(t=>t.id!==item.txId);localStorage.setItem(KEY,JSON.stringify(txs));render()}persistShopping();renderShopping();if(!quiet)say('خرید حذف شد و از جمع حساب هم برداشته شد.')}
+function clearTransactions(){if(confirm('همه تراکنش‌ها پاک شوند؟ ابتدا نسخه پشتیبان بگیرید.')){txs=[];localStorage.setItem(KEY,JSON.stringify(txs));shoppingItems=[];persistShopping();render();renderShopping()}}
+function exportData(){const data={transactions:txs,notebook:notes,shoppingItems,reminders,freeNote:localStorage.getItem(FREEKEY)||'',exportedAt:new Date().toISOString()};const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.href=url;a.download='backup-hesabdari.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);say('نسخه پشتیبان آماده شد.')}
+async function importData(){const input=$('backupImportFile'),file=input&&input.files&&input.files[0];if(!file){alert('ابتدا فایل پشتیبان JSON را انتخاب کنید.');return}if(!confirm('اطلاعات فعلی این برنامه با اطلاعات فایل پشتیبان جایگزین می‌شود. ادامه می‌دهید؟'))return;try{const data=JSON.parse(await file.text());if(!data||typeof data!=='object'||!Array.isArray(data.transactions)||!Array.isArray(data.notebook)||!Array.isArray(data.shoppingItems)||!Array.isArray(data.reminders)){throw new Error('ساختار فایل پشتیبان معتبر نیست')}localStorage.setItem(KEY,JSON.stringify(data.transactions));localStorage.setItem(NOTEKEY,JSON.stringify(data.notebook));localStorage.setItem(SHOPKEY,JSON.stringify(data.shoppingItems));localStorage.setItem(REMKEY,JSON.stringify(data.reminders));localStorage.setItem(FREEKEY,String(data.freeNote||''));txs=data.transactions;notes=data.notebook;shoppingItems=data.shoppingItems;reminders=data.reminders;render();renderNotes();renderShopping();renderReminders();if($('freeNote'))$('freeNote').value=String(data.freeNote||'');alert('بازیابی اطلاعات انجام شد. فایل‌های صوتی جداگانه منتقل می‌شوند و داخل این پشتیبان نیستند.');say('اطلاعات بازیابی شد.')}catch(e){alert('بازیابی انجام نشد. مطمئن شوید فایل، نسخه پشتیبان معتبر همین برنامه است.')}}
+function setSpeechEnabled(enabled){speechEnabled=Boolean(enabled);localStorage.setItem(SPEECHKEY,String(speechEnabled));$('speechSettingStatus').textContent=speechEnabled?'با مرام پس از ثبت‌ها پاسخ صوتی می‌دهد. برای تست، دکمه آزمایش صدا را بزنید.':'پاسخ صوتی خودکار خاموش شد؛ دکمه آزمایش صدا همچنان کار می‌کند.';if(speechEnabled)say('صدای با مرام فعال شد.');}
+function say(text,force=false){const status=$('voiceStatus');if(status)status.textContent=text;if(!force&&!speechEnabled)return;const toast=$('voiceToast');if(toast){toast.textContent=text;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),4300)}if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)){if($('speechSettingStatus'))$('speechSettingStatus').textContent='این مرورگر پخش گفتار را پشتیبانی نمی‌کند. از Chrome یا Edge به‌روز استفاده کنید.';return}try{window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(text));u.lang='fa-IR';u.rate=.88;u.pitch=1;u.volume=1;const voices=window.speechSynthesis.getVoices();const faVoice=voices.find(v=>/^fa[-_]IR$/i.test(v.lang))||voices.find(v=>/^fa([_-]|$)/i.test(v.lang)&&!/^fa[-_]AF$/i.test(v.lang)&&!/afghan|دری/i.test(v.name))||voices.find(v=>/persian|فارسی/i.test(v.name)&&!/afghan|دری/i.test(v.name));if(faVoice)u.voice=faVoice;u.onerror=()=>{if($('speechSettingStatus'))$('speechSettingStatus').textContent='پخش صدا انجام نشد؛ صدای دستگاه و مرورگر را بررسی کنید.'};window.speechSynthesis.speak(u);if($('speechSettingStatus'))$('speechSettingStatus').textContent=faVoice?'صدای فارسی دستگاه انتخاب شد.':'درخواست پخش گفتار فارسی ارسال شد؛ اگر صدا شنیده نمی‌شود، ممکن است صدای فارسی روی دستگاه موجود نباشد.'}catch(e){if($('speechSettingStatus'))$('speechSettingStatus').textContent='پخش صدا ناموفق بود؛ از مرورگر دیگری استفاده کنید.'}}
+function testSpeech(){say('سلام. من با مرام هستم؛ دستیار سخنگوی حسابداری شما. برای ثبت درآمد و هزینه بگویید، و اگر مبلغ اشتباه ثبت شد دوباره میکروفون را بزنید و بگویید پاک.',true)}
+function greetAndSpeak(){const current=$('balance').textContent;say('سلام، من با مرام هستم. امروز '+$('coverDayDate').textContent+'. موجودی حساب شما '+current+' تومان است. برای ثبت با صدا دکمه میکروفون شناور پایین صفحه را بزنید. برای لغو آخرین ثبت صوتی بگویید پاک.',true)}
+function floatingMicAction(){const active=document.querySelector('.page.active');if(active&&active.id==='notes')voiceTarget='note';else if(active&&active.id==='shopping')voiceTarget='shopping';else voiceTarget='tx';listenVoice()}
+function startVoice(){voiceTarget='tx';listenVoice()}function startNoteVoice(){voiceTarget='note';listenVoice()}
+function isClearCommand(s){return /(^|\s)(پاک|حذف|لغو|پاکش کن|حذف کن|اشتباه شد|باطل)(\s|$)/.test(String(s).trim())}
+function normalizeSpeech(s){
+  let t=String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/ۀ/g,'ه').replace(/ة/g,'ه').replace(/([۰-۹٠-٩0-9])،(?=[۰-۹٠-٩0-9])/g,'$1,').replace(/[،؛]/g,' ').replace(/‌/g,' ').replace(/\s+/g,' ').trim();
+  // Voice engines often merge Persian conjunctions: «هزارو»، «صدو»، «میلیونو».
+  const numberWords='صفر|یک|یه|یکم|دو|سه|چهار|پنج|شش|شیش|هفت|هشت|نه|ده|یازده|دوازده|سیزده|چهارده|پانزده|شانزده|شونزده|هفده|هجده|هیجده|نوزده|بیست|سی|چهل|پنجاه|شصت|هفتاد|هشتاد|نود|صد|یکصد|دویست|سیصد|چهارصد|پانصد|ششصد|هفتصد|هشتصد|نهصد|هزار|میلیون|میلیارد';
+  const fusedLeft='هزار|میلیون|میلیارد|یکصد|صد|دویست|سیصد|چهارصد|پانصد|ششصد|هفتصد|هشتصد|نهصد|یازده|دوازده|سیزده|چهارده|پانزده|شانزده|هفده|هجده|نوزده|بیست|سی|چهل|پنجاه|شصت|هفتاد|هشتاد|نود|ده';
+  const re=new RegExp('(' + fusedLeft + ')و(?=\\s*(?:'+numberWords+')(?:\\s|و|$))','g');
+  t=t.replace(re,'$1 و ').replace(/\s+/g,' ').trim();
+  return t;
+}
+const persianNumbers={'صفر':0,'یک':1,'یه':1,'یکم':1,'دو':2,'سه':3,'چهار':4,'پنج':5,'شش':6,'شیش':6,'هفت':7,'هشت':8,'نه':9,'ده':10,'یازده':11,'دوازده':12,'سیزده':13,'چهارده':14,'پانزده':15,'شانزده':16,'شونزده':16,'هفده':17,'هجده':18,'هیجده':18,'نوزده':19,'بیست':20,'سی':30,'چهل':40,'پنجاه':50,'شصت':60,'هفتاد':70,'هشتاد':80,'نود':90,'صد':100,'یکصد':100,'دویست':200,'سیصد':300,'چهارصد':400,'پانصد':500,'ششصد':600,'هفتصد':700,'هشتصد':800,'نهصد':900};
+const numberUnits=new Set(['هزار','میلیون','میلیارد']);
+const currencyWords=new Set(['تومان','تومن','تومانم','ریال','مبلغ','قیمت']);
+const commandWords=new Set(['هزینه','درآمد','ثبت','واریز','دریافت','حقوق','بخر','خریدم','خرید','بده','پرداخت','پول','قیمت','مبلغ']);
+function numericTokenValue(token){const n=normalizeDigits(token).replace(/[٬,،]/g,'');if(/^\d+$/.test(n))return Number(n);if(Object.prototype.hasOwnProperty.call(persianNumbers,token))return persianNumbers[token];return null}
+function isNumberWordToken(token){return numericTokenValue(token)!==null||numberUnits.has(token)}
+function parseNumberPhrase(tokens,start){
+  let i=start,group=0,total=0,found=false,used=[];
+  while(i<tokens.length){let t=tokens[i];
+    if(t==='و') { if(i+1<tokens.length&&isNumberWordToken(tokens[i+1])){used.push(i);i++;continue;} break; }
+    const v=numericTokenValue(t);
+    if(v!==null){group+=v;found=true;used.push(i);i++;continue;}
+    if(numberUnits.has(t)){const scale=t==='هزار'?1000:t==='میلیون'?1000000:1000000000;total+=(group||1)*scale;group=0;found=true;used.push(i);i++;continue;}
+    break;
+  }
+  const amount=total+group;
+  return {amount,used,end:i-1,found};
+}
+function extractVoiceAmountAndTitle(input){
+  const text=normalizeSpeech(input),tokens=text.split(' ');let candidates=[];
+  for(let i=0;i<tokens.length;i++){
+    if(!isNumberWordToken(tokens[i]))continue;
+    // Do not start a second parse in the middle of a number expression.
+    if(i>0&&(tokens[i-1]==='و'||isNumberWordToken(tokens[i-1])))continue;
+    const p=parseNumberPhrase(tokens,i);if(p.found&&p.amount>0&&p.used.length)candidates.push(p);
+  }
+  const currIndex=tokens.findIndex(t=>currencyWords.has(t));
+  let picked=null;
+  if(currIndex>=0){picked=candidates.filter(c=>c.end<currIndex).sort((a,b)=>b.end-a.end || b.used.length-a.used.length)[0]||null;}
+  if(!picked)picked=candidates.sort((a,b)=>b.end-a.end || b.used.length-a.used.length)[0]||null;
+  if(!picked){const cleaned=tokens.filter(t=>!commandWords.has(t)&&!currencyWords.has(t)).join(' ').trim();return{amount:0,title:cleaned,sourceText:text}}
+  const keep=new Set(picked.used); // remove connecting «و» inside the spoken amount too
+  const start=Math.min(...picked.used),end=Math.max(...picked.used);
+  for(let i=start;i<=end;i++){if(tokens[i]==='و'||isNumberWordToken(tokens[i]))keep.add(i)}
+  // Remove the currency word immediately following the number expression.
+  if(tokens[picked.end+1]&&currencyWords.has(tokens[picked.end+1]))keep.add(picked.end+1);
+  const title=tokens.filter((t,i)=>!keep.has(i)&&!commandWords.has(t)&&!currencyWords.has(t)).join(' ').replace(/\s+/g,' ').trim();
+  return{amount:picked.amount,title,sourceText:text};
+}
+function undoLastVoiceTransaction(){const idx=txs.findIndex(t=>t.source==='voice');if(idx<0)return false;const removed=txs.splice(idx,1)[0];localStorage.setItem(KEY,JSON.stringify(txs));if(removed.id){shoppingItems=shoppingItems.filter(s=>s.txId!==removed.id);persistShopping()}render();renderShopping();say('ثبت صوتی قبلی حذف شد: '+(removed.title||'تراکنش')+'، '+money(removed.amount),true);return true}
+function undoLastVoiceNote(){const last=notes.findIndex(n=>n.source==='voice');if(last>=0){const n=notes.splice(last,1)[0];persistNotes();renderNotes();say('مورد صوتی از دفتر پاک شد: '+n.text,true);return true}return false}
+function undoLastVoiceShopping(){const last=shoppingItems.findIndex(n=>n.source==='voice');if(last>=0){deleteShopping(last,true);say('آخرین خرید صوتی پاک شد.',true);return true}return false}
+function showStatusOnly(text){if($('voiceStatus'))$('voiceStatus').textContent=text;const toast=$('voiceToast');if(toast){toast.textContent=text;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),3500)}}
+function listenVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){say('این مرورگر تبدیل گفتار به متن را پشتیبانی نمی‌کند. Chrome یا Edge را امتحان کنید. صدای پاسخ‌گوی با مرام از تنظیمات جداگانه قابل آزمایش است.',true);return}
+  if('speechSynthesis' in window)window.speechSynthesis.cancel();
+  const r=new SR();r.lang='fa-IR';r.interimResults=false;r.maxAlternatives=1;showStatusOnly('گوش می‌دهم. برای لغو متن واردشده بگویید «پاک». برای مبلغ، عدد نمایش‌داده‌شده را بررسی کنید.');
+  try{r.start()}catch(e){say('میکروفون در حال استفاده است؛ چند لحظه دیگر دوباره بزنید.',true);return}
+  r.onresult=e=>{
+    const s=normalizeSpeech(e.results[0][0].transcript||'');
+    if(isClearCommand(s)){
+      if(voiceTarget==='note'){
+        if($('newNote').value){$('newNote').value='';pendingNoteVoice=false;say('متن واردشده پاک شد. یادداشت قبلی حذف نشد.',true)}
+        else if(!undoLastVoiceNote())say('متن صوتی برای پاک کردن وجود ندارد.',true);
+      }else if(voiceTarget==='shopping'){
+        if($('shoppingTitle').value||$('shoppingAmount').value){$('shoppingTitle').value='';$('shoppingAmount').value='';pendingShoppingVoice=false;say('نام و مبلغ خرید پاک شد. هیچ تراکنشی تغییر نکرد.',true)}
+        else if(!undoLastVoiceShopping())say('خرید صوتی برای پاک کردن پیدا نشد.',true);
+      }else{
+        const isIncome=$('addIncome').classList.contains('active');const titleEl=$(isIncome?'incomeTitle':'expenseTitle'),amountEl=$(isIncome?'incomeAmount':'expenseAmount');
+        if(titleEl.value||amountEl.value){titleEl.value='';amountEl.value='';$(isIncome?'incomeNote':'expenseNote').value='';pendingVoiceTransaction=false;say('عنوان و مبلغ روی فرم پاک شد. هیچ حساب ثبت‌شده‌ای تغییر نکرد.',true)}
+        else if(!undoLastVoiceTransaction())say('ثبت صوتی قبلی برای پاک کردن پیدا نشد.',true);
+      }
+      return;
+    }
+    // In the diary, keep the entire utterance as text; quantities such as 1.5 kg are not money.
+    if(voiceTarget==='note'){$('newNote').value=s;pendingNoteVoice=true;say('متن شنیده شد: '+s+'. برای ذخیره، دکمه افزودن را بزنید.',true);return}
+    const parsed=extractVoiceAmountAndTitle(s);
+    if(voiceTarget==='shopping'){
+      $('shoppingTitle').value=parsed.title||s;
+      if(parsed.amount>0){$('shoppingAmount').value=String(parsed.amount);formatMoneyField($('shoppingAmount'))}
+      pendingShoppingVoice=true;
+      say(parsed.amount>0?'مبلغی که شنیدم '+money(parsed.amount)+' است. نام و مبلغ را بررسی کنید؛ سپس دکمه ثبت خرید را بزنید. هنوز چیزی ثبت نشده است.':'نام خرید شنیده شد، اما مبلغ را مطمئن تشخیص ندادم. مبلغ را دستی وارد کنید؛ هنوز چیزی ثبت نشده است.',true);return;
+    }
+    const type=/درآمد|حقوق|دریافت|واریز/.test(s)?'in':'out';
+    openPage(type==='in'?'addIncome':'addExpense');
+    const titleEl=$(type==='in'?'incomeTitle':'expenseTitle'),amountEl=$(type==='in'?'incomeAmount':'expenseAmount');
+    titleEl.value=parsed.title||s;
+    if(parsed.amount>0){amountEl.value=String(parsed.amount);formatMoneyField(amountEl);pendingVoiceTransaction=true;say('مبلغی که شنیدم '+money(parsed.amount)+' است. لطفاً عنوان و مبلغ روی صفحه را بررسی کنید و فقط اگر درست بود دکمه ثبت را بزنید. هنوز چیزی به حساب اضافه نشده است.',true)}
+    else{amountEl.value='';pendingVoiceTransaction=false;say('عنوان شنیده شد، اما مبلغ را با اطمینان تشخیص ندادم. مبلغ را دستی وارد کنید؛ هیچ تراکنشی ثبت نشده است.',true)}
+  };
+  r.onerror=e=>{const msg=e.error==='not-allowed'?'اجازه میکروفون داده نشده است. مجوز میکروفون مرورگر را فعال کنید.':'صدای شما دریافت نشد. دوباره امتحان کنید.';say(msg,true)};
+}
+
+// Voice recordings are stored as audio blobs in IndexedDB, not as speech-to-text.
+const REC_DB='senior_accounting_recordings_v1', REC_STORE='recordings';
+let recorderDB=null, mediaRecorder=null, activeAudioChunks=[], activeAudioStream=null, recordingStartedAt=0;
+function openRecorderDB(){
+  return new Promise((resolve,reject)=>{
+    if(!('indexedDB' in window)){reject(new Error('ذخیره‌سازی محلی پشتیبانی نمی‌شود.'));return}
+    const req=indexedDB.open(REC_DB,1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(REC_STORE)){const st=db.createObjectStore(REC_STORE,{keyPath:'id',autoIncrement:true});st.createIndex('createdAt','createdAt')}}
+    req.onsuccess=()=>{recorderDB=req.result;resolve(recorderDB)};
+    req.onerror=()=>reject(req.error||new Error('باز کردن دفتر ضبط ناموفق بود.'));
+  });
+}
+async function recorderStore(mode,action,value){
+  const db=recorderDB||await openRecorderDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(REC_STORE,mode), store=tx.objectStore(REC_STORE);
+    let req;
+    if(action==='all')req=store.getAll();
+    else if(action==='add')req=store.add(value);
+    else if(action==='delete')req=store.delete(value);
+    if(req){req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)}
+    else resolve();
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+function recorderStatus(message){const el=$('recordingStatus');if(el)el.textContent=message}
+async function startAudioRecording(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){
+    recorderStatus('این مرورگر ضبط صدا را پشتیبانی نمی‌کند. Chrome یا Edge به‌روز را امتحان کنید.');return;
+  }
+  try{
+    await openRecorderDB();
+    activeAudioStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const mime=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(t=>MediaRecorder.isTypeSupported(t));
+    mediaRecorder=mime?new MediaRecorder(activeAudioStream,{mimeType:mime}):new MediaRecorder(activeAudioStream);
+    activeAudioChunks=[];recordingStartedAt=Date.now();
+    mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)activeAudioChunks.push(e.data)};
+    mediaRecorder.onerror=()=>recorderStatus('هنگام ضبط خطا رخ داد. مجوز میکروفون و دستگاه ورودی را بررسی کنید.');
+    mediaRecorder.onstop=async()=>{
+      try{
+        const blob=new Blob(activeAudioChunks,{type:mediaRecorder.mimeType||'audio/webm'});
+        if(blob.size){
+          const item={blob,category:$('recordCategory')?.value||'یادداشت روزانه',createdAt:Date.now(),duration:Math.max(1,Math.round((Date.now()-recordingStartedAt)/1000)),type:blob.type||'audio/webm'};
+          await recorderStore('readwrite','add',item);
+          recorderStatus('ضبط ذخیره شد. می‌توانید آن را پخش یا به‌صورت فایل دانلود کنید.');
+          await renderRecordings();
+        }else recorderStatus('صدایی ضبط نشد؛ دوباره امتحان کنید.');
+      }catch(err){recorderStatus('ذخیره ضبط ناموفق بود. فایل را با مرورگر یا دستگاه دیگری امتحان کنید.')}
+      if(activeAudioStream)activeAudioStream.getTracks().forEach(t=>t.stop());
+      activeAudioStream=null;activeAudioChunks=[];
+      $('recordStart').disabled=false;$('recordStop').disabled=true;
+      const floating=$('floatingRecorder');if(floating){floating.classList.remove('recording');floating.textContent='●';floating.title='شروع ضبط صوت شناور'}
+    };
+    mediaRecorder.start(1000);
+    $('recordStart').disabled=true;$('recordStop').disabled=false;
+    const floating=$('floatingRecorder');if(floating){floating.classList.add('recording');floating.textContent='■';floating.title='پایان ضبط و ذخیره فایل صوتی'}
+    recorderStatus('در حال ضبط… صحبت کنید؛ سپس «پایان و ذخیره» را بزنید.');
+  }catch(err){
+    if(activeAudioStream)activeAudioStream.getTracks().forEach(t=>t.stop());
+    activeAudioStream=null;
+    const floating=$('floatingRecorder');if(floating){floating.classList.remove('recording');floating.textContent='●'}
+    recorderStatus(err&&err.name==='NotAllowedError'?'اجازه میکروفون داده نشد. مجوز Microphone را برای Chrome فعال کنید.':'ضبط شروع نشد. مطمئن شوید میکروفون وصل است و صفحه در Chrome یا Edge باز شده است.');
+  }
+}
+function stopAudioRecording(){
+  if(mediaRecorder&&mediaRecorder.state!=='inactive'){mediaRecorder.stop();recorderStatus('در حال ذخیره فایل صوتی…')}
+}
+function toggleFloatingRecording(){
+  if(mediaRecorder&&mediaRecorder.state!=='inactive'){stopAudioRecording();return}
+  startAudioRecording();
+}
+function formatRecordingDate(ts){
+  try{return new Intl.DateTimeFormat('fa-IR',{dateStyle:'short',timeStyle:'short'}).format(new Date(ts))}catch(e){return new Date(ts).toLocaleString()}
+}
+function formatDuration(sec){const m=Math.floor(sec/60),r=sec%60;return (m?m+' دقیقه ':'')+r+' ثانیه'}
+async function renderRecordings(){
+  const root=$('recordingsList');if(!root)return;
+  try{
+    const items=await recorderStore('readonly','all');
+    items.sort((a,b)=>b.createdAt-a.createdAt);
+    if(!items.length){root.innerHTML='<p class="muted">هنوز فایل صوتی ضبط نشده است.</p>';return}
+    root.innerHTML='';
+    items.forEach(item=>{
+      const wrap=document.createElement('div');wrap.className='recording-item';
+      const title=document.createElement('strong');title.textContent='ضبط صوتی — '+item.category;wrap.appendChild(title);
+      const meta=document.createElement('small');meta.textContent=formatRecordingDate(item.createdAt)+' • '+formatDuration(item.duration);wrap.appendChild(meta);
+      const audio=document.createElement('audio');audio.controls=true;audio.preload='none';audio.src=URL.createObjectURL(item.blob);wrap.appendChild(audio);
+      const actions=document.createElement('div');actions.className='recording-actions';
+      const download=document.createElement('button');download.className='recording-download';download.textContent='دانلود فایل';download.onclick=()=>{const url=URL.createObjectURL(item.blob),a=document.createElement('a');a.href=url;a.download='record-'+item.id+'.'+(item.type&&item.type.includes('mp4')?'mp4':'webm');document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)};actions.appendChild(download);
+      const del=document.createElement('button');del.className='recording-delete';del.textContent='حذف ضبط';del.onclick=async()=>{if(confirm('این فایل ضبط‌شده حذف شود؟')){await recorderStore('readwrite','delete',item.id);renderRecordings()}};actions.appendChild(del);
+      wrap.appendChild(actions);root.appendChild(wrap);
+    });
+  }catch(e){root.textContent='فهرست ضبط‌ها باز نشد. از Chrome یا Edge به‌روز استفاده کنید.'}
+}
+
+function getJalaliParts(){try{const parts=new Intl.DateTimeFormat('en-u-ca-persian',{year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date());const p={};parts.forEach(x=>p[x.type]=x.value);return{year:Number(p.year),month:Number(p.month),day:Number(p.day)}}catch(e){return{year:1405,month:7,day:1}}}
+const monthNames=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+function renderCalendar(){const current=getJalaliParts();let year=current.year,month=current.month+monthOffset;while(month>12){month-=12;year++}while(month<1){month+=12;year--}$('monthLabel').textContent=monthNames[month-1]+' '+fa(year);const days=month<=6?31:month<=11?30:30;const first=(month*3+1)%7;let out=['ش','ی','د','س','چ','پ','ج'].map(x=>`<div class="dayname">${x}</div>`).join('');for(let i=0;i<first;i++)out+='<div class="day empty"></div>';for(let d=1;d<=days;d++)out+=`<div class="day ${d===current.day&&month===current.month&&year===current.year?'today':''}">${fa(d)}</div>`;$('calendarGrid').innerHTML=out}
+function changeMonth(n){monthOffset+=n;renderCalendar()}
+// Keep date, clock, settings and summaries fresh when opened.
+if($('clockType'))$('clockType').value=clockType;if($('speechToggle'))$('speechToggle').checked=speechEnabled;setClockType(clockType);attachMoneyFormatting();render();renderNotes();renderShopping();renderCalendar();initReminderForm();renderRecordings();updateDateTime();updateClock();checkReminders();setInterval(()=>{updateDateTime();updateClock();checkReminders()},10000);
+
+// PWA: cache the app shell when served over HTTPS or localhost.
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
